@@ -1,0 +1,14 @@
+[
+	{
+	"keys": ["ctrl+alt+right"], "command": "handy_harness", 
+	"args": { "op": "move_line_to_bottom" }
+	},
+	{
+	"keys": ["ctrl+alt+left"], "command": "handy_harness", 
+	"args": { "op": "move_line_to_top" }
+	},
+	{
+	"keys": ["ctrl+alt+down"], "command": "handy_harness", 
+	"args": { "op": "move_line_to_next" }
+	}
+]
