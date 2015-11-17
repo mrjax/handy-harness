@@ -1,5 +1,12 @@
 [
 	{ "command": "save" },
 	{ "command": "save_All" },
-	{ "command": "handy_harness", "caption": "Erase Line", "args": { "op": "erase_line"}} 
+	{ "command": "handy_harness", "caption": "Erase Line", "args": { "op": "erase_line"}},
+	{ "command": "handy_harness", "caption": "test sub menu", 
+		"children": 
+		[ 
+			{ "caption": "yes"}, 
+			{ "caption": "no"}
+		]
+	}
 ]
