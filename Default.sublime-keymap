@@ -1,26 +1,30 @@
 [
 	{
-	"keys": ["ctrl+shift+alt+right"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_bottom" }
+		"keys": ["ctrl+shift+alt+right"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_bottom" }
 	},
 	{
-	"keys": ["ctrl+shift+alt+left"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_top" }
+		"keys": ["ctrl+shift+alt+left"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_top" }
 	},
 	{
-	"keys": ["ctrl+shift+alt+down"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_next_bookmark" }
+		"keys": ["ctrl+shift+alt+down"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_next_bookmark" }
 	},
 	{
-	"keys": ["ctrl+shift+alt+up"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_prev_bookmark" }
+		"keys": ["ctrl+shift+alt+up"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_prev_bookmark" }
 	},
 	{
-	"keys": ["ctrl+alt+right"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_next_empty" }
+		"keys": ["ctrl+alt+right"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_next_empty" }
 	},
 	{
-	"keys": ["ctrl+alt+left"], "command": "handy_harness", 
-	"args": { "op": "move_line_to_prev_empty" }
+		"keys": ["ctrl+alt+left"], "command": "handy_harness", 
+		"args": { "op": "move_line_to_prev_empty" }
+	},
+	{
+		"keys": ["ctrl+c"], "command": "handy_harness",
+		"args": { "op": "copy" }
 	}
 ]

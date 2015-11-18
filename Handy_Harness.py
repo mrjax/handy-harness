@@ -1,4 +1,5 @@
 import sublime, sublime_plugin, sys
+import json
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
@@ -26,8 +27,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		elif args['op'] == 'erase_line':
 			self.eraseLine(edit)
 
+		elif args['op'] == 'history':
+			self.history()
 
-
+		elif args['op'] == 'copy':
+			self.history()
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -147,3 +151,43 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		self.view.sel().add(sublime.Region(end + 1 + s.a - start))
 
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
+	
+
+	def history(self):
+
+		self.view.run_command('copy')
+		
+		with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu') as contextMenu:
+			menuData = json.load(contextMenu)
+
+		for item in menuData:
+			if 'caption' not in item:
+				continue
+			if item['caption'] == "History":
+				historyItem = item
+				break
+
+		#if number of children are less than 5, just append child
+		if len(historyItem['children']) < 5:
+			#STUB need to add paste command that does set_clipboard then runs paste
+			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "paste", "args": sublime.get_clipboard()})
+		else:
+			#if number of children equal five, slide 2-5 up, then set 5 to new entry
+			#can do this with arr[::] notation
+			i = 1
+			while i <= 5 - 1:
+				historyItem['children'][i-1] = historyItem['children'][i]
+				i+=1
+			historyItem['children'].pop(5 - 1)
+			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "paste", "args": sublime.get_clipboard()})
+
+		with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu', 'w') as contextMenu:
+			menuData[menuData.index(item)] = historyItem
+			json.dump(menuData, contextMenu)
+
+#subsets = sublime.load_settings('Preferences.sublime-settings')
+
+#with open(sublime.packages_path().replace('\\','/') + '/My Snippets/Default.sublime-keymap', 'w') as kfyl:
+#		kfyl.write(strFile)
+#111111122222333333344444455555566666ntext.subntext.sub
+
