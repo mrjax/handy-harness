@@ -25,6 +25,10 @@
 	},
 	{
 		"keys": ["ctrl+c"], "command": "handy_harness",
-		"args": { "op": "copy" }
+		"args": { "op": "history_copy" }
+	},
+	{
+		"keys": ["ctrl+v"], "command": "handy_harness",
+		"args": { "op": "history_paste", "text": ""}
 	}
 ]

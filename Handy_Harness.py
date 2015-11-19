@@ -27,11 +27,17 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		elif args['op'] == 'erase_line':
 			self.eraseLine(edit)
 
-		elif args['op'] == 'history':
-			self.history()
+		elif args['op'] == 'history_copy':
+			self.historyCopy()
 
-		elif args['op'] == 'copy':
-			self.history()
+		elif args['op'] == 'history_paste':
+			print args['text']
+			if args['text'] == "":
+				print "pasting normally"
+				self.view.run_command('paste')
+			else:
+				print "pasting from context menu"
+				self.historyPaste(edit, args['text'])
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -153,11 +159,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 	
 
-	def history(self):
+	def historyCopy(self):
 
 		self.view.run_command('copy')
 		
-		with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu') as contextMenu:
+		with open(sublime.packages_path() + '\Handy_Harness\Context.sublime-menu') as contextMenu:
 			menuData = json.load(contextMenu)
 
 		for item in menuData:
@@ -169,8 +175,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 		#if number of children are less than 5, just append child
 		if len(historyItem['children']) < 5:
-			#STUB need to add paste command that does set_clipboard then runs paste
-			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "paste", "args": sublime.get_clipboard()})
+			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
 		else:
 			#if number of children equal five, slide 2-5 up, then set 5 to new entry
 			#can do this with arr[::] notation
@@ -179,15 +184,18 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				historyItem['children'][i-1] = historyItem['children'][i]
 				i+=1
 			historyItem['children'].pop(5 - 1)
-			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "paste", "args": sublime.get_clipboard()})
+			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
 
-		with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu', 'w') as contextMenu:
+		with open(sublime.packages_path() + '\Handy_Harness\Context.sublime-menu', 'w') as contextMenu:
 			menuData[menuData.index(item)] = historyItem
 			json.dump(menuData, contextMenu)
 
-#subsets = sublime.load_settings('Preferences.sublime-settings')
 
-#with open(sublime.packages_path().replace('\\','/') + '/My Snippets/Default.sublime-keymap', 'w') as kfyl:
-#		kfyl.write(strFile)
-#111111122222333333344444455555566666ntext.subntext.sub
+	def historyPaste(self, edit, text):
+		sublime.set_clipboard(text)
 
+		self.view.erase(edit, sublime.Region(self.view.sel()[0].a, self.view.sel()[0].b))
+		self.view.insert(edit, self.view.sel()[0].a, text)
+		
+		#normal paste doesn't work here, not sure why
+		#sublime.run_command('paste')
