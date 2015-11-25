@@ -30,5 +30,9 @@
 	{
 		"keys": ["ctrl+v"], "command": "handy_harness",
 		"args": { "op": "history_paste", "text": ""}
+	},
+	{
+		"keys": ["ctrl+alt+shift+r"], "command": "handy_harness",
+		"args": { "op": "random"}
 	}
 ]

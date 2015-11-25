@@ -1,5 +1,6 @@
 import sublime, sublime_plugin, sys
 import json
+import random, os
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
 	def run(self, edit, **args):
@@ -31,13 +32,15 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.historyCopy()
 
 		elif args['op'] == 'history_paste':
-			print args['text']
 			if args['text'] == "":
 				print "pasting normally"
 				self.view.run_command('paste')
 			else:
 				print "pasting from context menu"
 				self.historyPaste(edit, args['text'])
+
+		elif args['op'] == 'random':
+			self.randomize(edit)			
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -199,3 +202,39 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		
 		#normal paste doesn't work here, not sure why
 		#sublime.run_command('paste')
+
+
+	def randomize(self, edit):
+		s = self.view.sel()[0]
+
+		size = self.view.size()
+		start = s.a
+		end = s.b
+
+		while(start > 0 and self.view.substr(start - 1) != '\n'):
+			start -= 1
+
+		while(end < size and self.view.substr(end) != '\n'):
+			end += 1
+
+		line = self.view.substr(self.view.full_line(sublime.Region(start,end))).strip().split()
+		
+		lineList = []
+		for item in line:
+			lineList.append(item)
+
+		random.shuffle(lineList)
+
+		output = ""
+		for i, piece in enumerate(lineList):
+			output += piece
+			if i != len(lineList) - 1:
+				output += os.linesep
+
+		print output.encode('ascii', 'ignore')
+		print start
+		print end
+
+		self.view.insert(edit, end, output.encode('ascii', 'ignore'))
+		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
+
