@@ -32,6 +32,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.historyCopy()
 
 		elif args['op'] == 'history_paste':
+			print args['text']
 			if args['text'] == "":
 				print "pasting normally"
 				self.view.run_command('paste')
@@ -40,7 +41,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				self.historyPaste(edit, args['text'])
 
 		elif args['op'] == 'random':
-			self.randomize(edit)			
+			self.randomize(edit)
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -197,12 +198,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 	def historyPaste(self, edit, text):
 		sublime.set_clipboard(text)
 
-		self.view.erase(edit, sublime.Region(self.view.sel()[0].begin(, self.view.sel()[0].end()))
+		self.view.erase(edit, sublime.Region(self.view.sel()[0].begin(), self.view.sel()[0].end()))
 		self.view.insert(edit, self.view.sel()[0].begin(), text)
 		
 		#normal paste doesn't work here, not sure why
 		#sublime.run_command('paste')
-
 
 	def randomize(self, edit):
 		s = self.view.sel()[0]
@@ -237,4 +237,3 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 		self.view.insert(edit, end, output.encode('ascii', 'ignore'))
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
-
