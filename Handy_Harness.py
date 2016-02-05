@@ -6,7 +6,6 @@ from datetime import date, timedelta
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
 	config = sublime.load_settings("Handy_Harness.sublime-settings")
-
 	def run(self, edit, **args):
 		
 		print "Program start"	
@@ -36,6 +35,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.historyCopy()
 
 		elif args['op'] == 'history_paste':
+			print args['text']
 			if args['text'] == "":
 				print "pasting normally"
 				self.view.run_command('paste')
@@ -44,17 +44,17 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				self.historyPaste(edit, args['text'])
 
 		elif args['op'] == 'random':
-			self.randomize(edit)	
+			self.randomize(edit)
 
 		elif args['op'] == 'remind':
-			self.remind(edit)			
+			self.remind(edit)
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
 
 		size = self.view.size()
-		start = s.a
-		end = s.b
+		start = s.begin()
+		end = s.end()
 
 		while(start > 0 and self.view.substr(start - 1) != '\n'):
 			start -= 1
@@ -67,14 +67,14 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
  
 		if dest == "bottom": 
 			self.view.sel().clear()
-			self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+			self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 			self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 			
 			self.view.insert(edit, self.view.size(), "\n" + line)
 
 		if dest == "top":
 			self.view.sel().clear()
-			self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+			self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 			self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 			
 			self.view.insert(edit, 0, line + "\n")			
@@ -82,28 +82,28 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		if dest == "next_bookmark":
 			bookmarks = self.view.get_regions('bookmarks')
 			if len(bookmarks) != 0:
-				index = self.view.sel()[0].a - 1
-				while index < self.view.sel()[0].a and len(bookmarks) >= 1:
-					index = bookmarks[0].a
+				index = self.view.sel()[0].begin() - 1
+				while index < self.view.sel()[0].begin() and len(bookmarks) >= 1:
+					index = bookmarks[0].begin()
 					bookmarks.pop(0)
 
 				self.view.insert(edit, index, "\n" +  line)
 
 				self.view.sel().clear()
-				self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+				self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 				self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 		if dest == "prev_bookmark":
 			bookmarks = self.view.get_regions('bookmarks')
 			if len(bookmarks) != 0:
-				index = self.view.sel()[0].a + 1
-				while index > self.view.sel()[0].a and len(bookmarks) >= 1:
-					index = bookmarks[len(bookmarks) - 1].a
+				index = self.view.sel()[0].begin() + 1
+				while index > self.view.sel()[0].begin() and len(bookmarks) >= 1:
+					index = bookmarks[len(bookmarks) - 1].begin()
 					bookmarks.pop(len(bookmarks) - 1)
 
 				#must remove line before inserting because insertion will change deletion points
 				self.view.sel().clear()
-				self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+				self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 				self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 				self.view.insert(edit, index, "\n" +  line)
@@ -124,7 +124,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.view.insert(edit, end + count + index, "\n" +  line)
 
 			self.view.sel().clear()
-			self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+			self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 			self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 		if dest == "prev_empty":
@@ -141,7 +141,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				index += 1
 
 			self.view.sel().clear()
-			self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+			self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 			self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 			#needed to determine insert point by combining characters leading up to next empty line, and since we split on newlines, I had to include that in the counting as well
@@ -152,8 +152,8 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		s = self.view.sel()[0]
 
 		size = self.view.size()
-		start = s.a
-		end = s.b
+		start = s.begin()
+		end = s.end()
 
 		while(start > 0 and self.view.substr(start - 1) != '\n'):
 			start -= 1
@@ -164,7 +164,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		print self.view.substr(self.view.full_line(sublime.Region(start,end))).strip()
 
 		self.view.sel().clear()
-		self.view.sel().add(sublime.Region(end + 1 + s.a - start))
+		self.view.sel().add(sublime.Region(end + 1 + s.begin() - start))
 
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 	
@@ -204,12 +204,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 	def historyPaste(self, edit, text):
 		sublime.set_clipboard(text)
 
-		self.view.erase(edit, sublime.Region(self.view.sel()[0].a, self.view.sel()[0].b))
-		self.view.insert(edit, self.view.sel()[0].a, text)
+		self.view.erase(edit, sublime.Region(self.view.sel()[0].begin(), self.view.sel()[0].end()))
+		self.view.insert(edit, self.view.sel()[0].begin(), text)
 		
 		#normal paste doesn't work here, not sure why
 		#sublime.run_command('paste')
-
 
 	def randomize(self, edit):
 		s = self.view.sel()[0]
@@ -246,6 +245,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 
+
 	def remind(self, edit):
 		
 	
@@ -275,5 +275,3 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 		print i
 		print reminders.length()
-
-
