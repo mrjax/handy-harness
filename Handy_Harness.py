@@ -1,8 +1,12 @@
 import sublime, sublime_plugin, sys
 import json
 import random, os
+from time import gmtime, strftime
+from datetime import date, timedelta
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
+	config = sublime.load_settings("Handy_Harness.sublime-settings")
+
 	def run(self, edit, **args):
 		
 		print "Program start"	
@@ -40,7 +44,10 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				self.historyPaste(edit, args['text'])
 
 		elif args['op'] == 'random':
-			self.randomize(edit)			
+			self.randomize(edit)	
+
+		elif args['op'] == 'remind':
+			self.remind(edit)			
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -237,4 +244,36 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 		self.view.insert(edit, end, output.encode('ascii', 'ignore'))
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
+
+
+	def remind(self, edit):
+		
+	
+		remindFilePath = self.config.get("remindFile")
+		insertionFilePath = self.config.get("todoInsertionFile")
+		startDelim = self.config.get("startDelimiter")
+		endDelim = self.config.get("endDelimiter")
+		dayLimit = self.config.get("daysFromNow")
+
+		try:
+			f = open(remindFilePath, 'r')
+		except ValueError, IOError:
+			print "Cannot open remind file"
+
+		reminders = f.read().split('\n')
+		reminders.sort()
+
+		today = date.today()
+		endDay = today + timedelta(int(dayLimit))
+
+		endDate = strftime("%Y-%m-%d", endDay.timetuple())
+
+		i = 0
+		#change while condition to ye < ye, mo < mo, da < da, and end of list not exceeded
+		while(reminders[i][:10] < endDate and i < len(reminders)):
+			i+1		
+
+		print i
+		print reminders.length()
+
 
