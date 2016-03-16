@@ -5,7 +5,7 @@ from time import gmtime, strftime
 from datetime import date, timedelta
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
-	config = sublime.load_settings("Handy_Harness.sublime-settings")
+
 	def run(self, edit, **args):
 		
 		print "Program start"	
@@ -32,7 +32,8 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.eraseLine(edit)
 
 		elif args['op'] == 'history_copy':
-			self.historyCopy()
+			#self.historyCopy()
+			pass
 
 		elif args['op'] == 'history_paste':
 			print args['text']
@@ -46,8 +47,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		elif args['op'] == 'random':
 			self.randomize(edit)
 
-		elif args['op'] == 'remind':
-			self.remind(edit)
+		elif args['op'] == 'updateReminders':
+			self.updateReminders(edit)
+
+		elif args['op'] == 'addToReminders':
+			self.addToReminders(edit)
 
 	def moveLineTo(self, edit, dest):
 		s = self.view.sel()[0]
@@ -210,6 +214,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		#normal paste doesn't work here, not sure why
 		#sublime.run_command('paste')
 
+
 	def randomize(self, edit):
 		s = self.view.sel()[0]
 
@@ -245,33 +250,145 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		self.view.erase(edit, self.view.full_line(sublime.Region(start,end)))
 
 
+	def updateReminders(self, edit):
 
-	def remind(self, edit):
+		print "Starting Remind"
+
+		config = sublime.load_settings("Handy_Harness.sublime-settings")
 		
-	
-		remindFilePath = self.config.get("remindFile")
-		insertionFilePath = self.config.get("todoInsertionFile")
-		startDelim = self.config.get("startDelimiter")
-		endDelim = self.config.get("endDelimiter")
-		dayLimit = self.config.get("daysFromNow")
+		remindFilePath = config.get("remindFile").encode('ascii','ignore').encode('string-escape')
+		insertionFilePath = config.get("todoInsertionFile").encode('ascii','ignore').encode('string-escape')
+		startDelim = config.get("startDelimiter").encode('ascii','ignore')
+		endDelim = config.get("endDelimiter").encode('ascii','ignore')
+		dayLimit = config.get("daysFromNow").encode('ascii','ignore')
+
+		if type(remindFilePath) is None or type(insertionFilePath) is None or type(dayLimit) is None:
+			print "Missing Some Settings, Check remindFilePath, insertionFilePath, or dayLimit settings"
+			return 
 
 		try:
 			f = open(remindFilePath, 'r')
+			valid = True
+			pass
 		except ValueError, IOError:
-			print "Cannot open remind file"
+			valid = False
+			print "Cannot open reminder file"
 
-		reminders = f.read().split('\n')
-		reminders.sort()
+		print "Loaded Reminder File"
 
-		today = date.today()
-		endDay = today + timedelta(int(dayLimit))
+		if(valid):
+			reminders = f.read().split('\n')
+			f.close()
 
-		endDate = strftime("%Y-%m-%d", endDay.timetuple())
+			reminders.sort()
 
-		i = 0
-		#change while condition to ye < ye, mo < mo, da < da, and end of list not exceeded
-		while(reminders[i][:10] < endDate and i < len(reminders)):
-			i+1		
+			#Find string of today + dayLimit in "YE-MO-DA" form
+			today = date.today()
+			endDay = today + timedelta(int(dayLimit))
+			endDate = strftime("%Y-%m-%d", endDay.timetuple())
 
-		print i
-		print reminders.length()
+			#print reminders[0]
+			#print reminders[0][:10]
+
+			i = 0
+			results = ""
+			#Loop through sorted list until you run out or until you find a date later than the end date
+			while i < len(reminders) and reminders[i][:10] < endDate:
+				results += reminders[i]
+				results += '\n'
+				i+=1
+
+			if not results:
+				results = "No reminders within " + endDate + " days\n"
+
+			#Pick up destination File
+			try:
+				f = open(insertionFilePath.encode('ascii','ignore').encode('string-escape'), 'r')
+				valid = True
+				pass
+			except ValueError, IOError:
+				valid = False
+				print "Cannot open insertion file"
+
+			print "Loaded Insertion File"
+
+			#Parse through and remove all between start delimiter and end delimiter
+			#....also add cases for Start of File and End of File SOF/EOF
+			#....also add cases for line numbers of destination file? or relative numbers?
+			insert = f.read().encode('ascii','ignore')
+			f.close()
+			#print insert
+
+			start = -1
+			end = -1
+			if startDelim == "sof" or startDelim == "SOF":
+				print "Start of File found"
+				start = 0
+			elif startDelim == "eof" or startDelim == "EOF":
+				print "Found Improper startDelim"
+				return
+			else:
+				print "Finding Start Delimiter from String"
+				start = insert.find(startDelim) + len(startDelim)
+
+			if endDelim == "eof" or endDelim == "eof":
+				print "End of File found"
+				end = len(insert)
+			elif endDelim == "sof" or endDelim == "SOF":
+				print "Found Improper endDelim"
+				return
+			else:
+				print "Finding End Delimiter from String"
+				end = insert.find(endDelim)
+			
+			if start == -1 or end == -1:
+				print "Could not find startDelim or endDelim in insertion file"
+				return
+
+			#print start
+			#print end
+
+			if start != end:
+				self.view.erase(edit, sublime.Region(start,end))
+
+			#Insert results into that space
+			self.view.insert(edit, start, '\n' +  results)
+
+	def addToReminders(self, edit):
+		#grab line
+
+		#check if it is a valid reminder, if not, stop
+
+		#open reminders file with write permissions
+
+		#append to reminders file
+
+		#save reminders file?
+
+		#if successful, remove from current file
+
+		pass
+
+	def removeFromReminders(self,edit):
+		##STUB, archive instead of remove?
+
+		#grab line
+
+		#open reminders file with write permissions
+
+		#search for line
+
+		#erase line from reminders
+
+		#Close/save reminders file
+
+		#if successful, remove line from current file
+
+		pass
+
+	def goToReminders(self,edit):
+		#open up a new tab with reminders file
+
+		#shift focus to new tab
+
+		pass
