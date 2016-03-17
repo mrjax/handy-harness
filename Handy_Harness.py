@@ -3,6 +3,7 @@ import json
 import random, os
 from time import gmtime, strftime
 from datetime import date, timedelta
+import re
 
 class HandyHarnessCommand(sublime_plugin.TextCommand):
 
@@ -362,19 +363,57 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 
 	def addToReminders(self, edit):
+		print "adding to reminders"
+
+		#grab reminder filename
+		config = sublime.load_settings("Handy_Harness.sublime-settings")
+		
+		remindFilePath = config.get("remindFile").encode('ascii','ignore').encode('string-escape')
+
+		if type(remindFilePath) is None:
+			print "Missing Some Settings--Check remindFilePath or insertionFilePath settings"
+			return 
+
 		#grab line
+		#Stub: just make a function for grabbing a line and only a line that takes self and returns string, start, and end
+		#line, start, end = grabLine(self)
+		s = self.view.sel()[0]
 
-		#check if it is a valid reminder, if not, stop
+		size = self.view.size()
+		start = s.begin()
+		end = s.end()
 
-		#open reminders file with write permissions
+		while(start > 0 and self.view.substr(start - 1) != '\n'):
+			start -= 1
 
-		#append to reminders file
+		while(end < size and self.view.substr(end) != '\n'):
+			end += 1
 
-		#save reminders file?
+		line = self.view.substr(self.view.full_line(sublime.Region(start,end))).strip().encode('ascii','ignore')
 
-		#if successful, remove from current file
+		#check if it is a valid reminder, if not valid, do not add to reminders file and do not remove from current file
+		if re.match(r"^[0-9]{4}-[0-1][0-9]-[0-3][0-9]", line):		
+			try:
+				f = open(remindFilePath, 'a')
+				valid = True
+				pass
+			except ValueError, IOError:
+				valid = False
+				print "Cannot open reminder file"
 
-		pass
+			print "Loaded Reminder File"
+
+			if valid:
+				#append to reminders file
+				f.write("\n" + line)
+				f.close()
+
+				#stub: save reminders file?
+
+				#if successful, remove from current file
+				self.view.erase(edit, sublime.Region(start,end))
+		else:
+			print "Could not find a valid date beginning in the form ####-##-##"
 
 
 	def removeFromReminders(self,edit):
@@ -388,7 +427,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 		#erase line from reminders
 
-		#Close/save reminders file
+
 
 		#if successful, remove line from current file
 
