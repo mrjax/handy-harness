@@ -32,7 +32,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			self.eraseLine(edit)
 
 		elif args['op'] == 'history_copy':
-			#self.historyCopy()
+			self.historyCopy()
 			pass
 
 		elif args['op'] == 'history_paste':
@@ -176,33 +176,39 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 	def historyCopy(self):
 
 		self.view.run_command('copy')
-		
-		with open(sublime.packages_path() + '\Handy_Harness\Context.sublime-menu') as contextMenu:
-			menuData = json.load(contextMenu)
 
-		for item in menuData:
-			if 'caption' not in item:
-				continue
-			if item['caption'] == "History":
-				historyItem = item
-				break
+		try:
+			with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu') as contextMenu:
+				menuData = json.load(contextMenu)
+			valid = True
+		except IOError:
+			valid = False
+			print "Could not open Context File"
 
-		#if number of children are less than 5, just append child
-		if len(historyItem['children']) < 5:
-			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
-		else:
-			#if number of children equal five, slide 2-5 up, then set 5 to new entry
-			#can do this with arr[::] notation
-			i = 1
-			while i <= 5 - 1:
-				historyItem['children'][i-1] = historyItem['children'][i]
-				i+=1
-			historyItem['children'].pop(5 - 1)
-			historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
+		if valid:
+			for item in menuData:
+				if 'caption' not in item:
+					continue
+				if item['caption'] == "History":
+					historyItem = item
+					break
 
-		with open(sublime.packages_path() + '\Handy_Harness\Context.sublime-menu', 'w') as contextMenu:
-			menuData[menuData.index(item)] = historyItem
-			json.dump(menuData, contextMenu)
+			#if number of children are less than 5, just append child
+			if len(historyItem['children']) < 5:
+				historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
+			else:
+				#if number of children equal five, slide 2-5 up, then set 5 to new entry
+				#can do this with arr[::] notation
+				i = 1
+				while i <= 5 - 1:
+					historyItem['children'][i-1] = historyItem['children'][i]
+					i+=1
+				historyItem['children'].pop(5 - 1)
+				historyItem['children'].append({"caption": sublime.get_clipboard(), "command": "handy_harness", "args": { "op": "history_paste", "text": sublime.get_clipboard()}})
+
+			with open(sublime.packages_path() + '\handy-harness\Context.sublime-menu', 'w') as contextMenu:
+				menuData[menuData.index(item)] = historyItem
+				json.dump(menuData, contextMenu)
 
 
 	def historyPaste(self, edit, text):
@@ -354,6 +360,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			#Insert results into that space
 			self.view.insert(edit, start, '\n' +  results)
 
+
 	def addToReminders(self, edit):
 		#grab line
 
@@ -368,6 +375,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		#if successful, remove from current file
 
 		pass
+
 
 	def removeFromReminders(self,edit):
 		##STUB, archive instead of remove?
@@ -385,6 +393,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		#if successful, remove line from current file
 
 		pass
+
 
 	def goToReminders(self,edit):
 		#open up a new tab with reminders file
