@@ -37,6 +37,6 @@
 	},
 	{
 		"keys": ["ctrl+alt+r"], "command": "handy_harness",
-		"args": { "op": "addToReminders"}
+		"args": { "op": "removeFromReminders"}
 	}
 ]

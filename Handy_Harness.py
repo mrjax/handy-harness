@@ -54,7 +54,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		elif args['op'] == 'addToReminders':
 			self.addToReminders(edit)
 
+		elif args['op'] == 'removeFromReminders':
+			self.removeFromReminders(edit)
+
 	def moveLineTo(self, edit, dest):
+		#grab line
 		s = self.view.sel()[0]
 
 		size = self.view.size()
@@ -154,6 +158,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 
 	def eraseLine(self, edit):
+		#grab line
 		s = self.view.sel()[0]
 
 		size = self.view.size()
@@ -223,6 +228,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 
 	def randomize(self, edit):
+		#grab line
 		s = self.view.sel()[0]
 
 		size = self.view.size()
@@ -375,21 +381,12 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			return 
 
 		#grab line
-		#Stub: just make a function for grabbing a line and only a line that takes self and returns string, start, and end
-		#line, start, end = grabLine(self)
-		s = self.view.sel()[0]
+		line, start, end = self.grabLine()
 
-		size = self.view.size()
-		start = s.begin()
-		end = s.end()
+		print line
+		print start
+		print end
 
-		while(start > 0 and self.view.substr(start - 1) != '\n'):
-			start -= 1
-
-		while(end < size and self.view.substr(end) != '\n'):
-			end += 1
-
-		line = self.view.substr(self.view.full_line(sublime.Region(start,end))).strip().encode('ascii','ignore')
 
 		#check if it is a valid reminder, if not valid, do not add to reminders file and do not remove from current file
 		if re.match(r"^[0-9]{4}-[0-1][0-9]-[0-3][0-9]", line):		
@@ -412,24 +409,61 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 				#if successful, remove from current file
 				self.view.erase(edit, sublime.Region(start,end))
+
+				print "Sent {" + line + "} to reminders file"
 		else:
 			print "Could not find a valid date beginning in the form ####-##-##"
 
 
 	def removeFromReminders(self,edit):
 		##STUB, archive instead of remove?
+		print "Removing from Reminders"
 
 		#grab line
+		line, start, end = self.grabLine()
+
+		#get info for reminders file
+		config = sublime.load_settings("Handy_Harness.sublime-settings")
+		
+		remindFilePath = config.get("remindFile").encode('ascii','ignore').encode('string-escape')
+
+		if type(remindFilePath) is None:
+			print "Missing Some Settings--Check remindFilePath or insertionFilePath settings"
+			return 
 
 		#open reminders file with write permissions
+		try:
+			f = open(remindFilePath, 'r')
+			valid = True
+			pass
+		except ValueError, IOError:
+			valid = False
+			print "Cannot open reminder file"
+
+		print "Loaded Reminder File"
+
+		#pulling out text from reminders
+		reminders = f.read()
+		f.close()
+
 
 		#search for line
+		index = reminders.find(line)
+		if index == -1:
+			print "Could not find that reminder"
+		else:
+			remindEnd = index
+			while(remindEnd < len(reminders) and reminders[remindEnd] != '\n'):
+				remindEnd += 1
 
-		#erase line from reminders
+			#erase line from reminders
+			reminders = reminders[0:index] + reminders[remindEnd:len(reminders)]
 
+			f = open(remindFilePath, 'w')
+			f.write(reminders)
 
-
-		#if successful, remove line from current file
+			#if successful, remove line from current file
+			self.view.erase(edit, sublime.Region(start,end))
 
 		pass
 
@@ -440,3 +474,29 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		#shift focus to new tab
 
 		pass
+
+	def sortReminders(self,edit):
+		#Open up reminders file with write permissions
+
+		#sort
+
+		#erase all
+
+		#insert sorted list back in
+
+		pass
+
+	def grabLine(self):
+		s = self.view.sel()[0]
+
+		size = self.view.size()
+		start = s.begin()
+		end = s.end()
+
+		while(start > 0 and self.view.substr(start - 1) != '\n'):
+			start -= 1
+
+		while(end < size and self.view.substr(end) != '\n'):
+			end += 1
+
+		return self.view.substr(self.view.full_line(sublime.Region(start,end))).strip().encode('ascii','ignore'), start, end
