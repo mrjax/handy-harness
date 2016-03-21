@@ -57,6 +57,12 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		elif args['op'] == 'removeFromReminders':
 			self.removeFromReminders(edit)
 
+		elif args['op'] == 'sortReminders':
+			self.sortReminders(edit)
+
+		elif args['op'] == 'goToReminders':
+			self.goToReminders(edit)
+
 	def moveLineTo(self, edit, dest):
 		#grab line
 		s = self.view.sel()[0]
@@ -383,11 +389,6 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 		#grab line
 		line, start, end = self.grabLine()
 
-		print line
-		print start
-		print end
-
-
 		#check if it is a valid reminder, if not valid, do not add to reminders file and do not remove from current file
 		if re.match(r"^[0-9]{4}-[0-1][0-9]-[0-3][0-9]", line):		
 			try:
@@ -469,20 +470,50 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 
 	def goToReminders(self,edit):
-		#open up a new tab with reminders file
+		#get info on remind file
+		config = sublime.load_settings("Handy_Harness.sublime-settings")
+		remindFilePath = config.get("remindFile").encode('ascii','ignore').encode('string-escape')
 
+		#open up a new tab with reminders file
+		os.startfile(remindFilePath)
+		
 		#shift focus to new tab
 
 		pass
 
 	def sortReminders(self,edit):
 		#Open up reminders file with write permissions
+		config = sublime.load_settings("Handy_Harness.sublime-settings")
+		
+		remindFilePath = config.get("remindFile").encode('ascii','ignore').encode('string-escape')
+
+		if type(remindFilePath) is None:
+			print "Missing Some Settings--Check remindFilePath or insertionFilePath settings"
+			return 
+
+		#open reminders file with write permissions
+		try:
+			f = open(remindFilePath, 'r')
+			valid = True
+			pass
+		except ValueError, IOError:
+			valid = False
+			print "Cannot open reminder file"
+
+		print "Loaded Reminder File"
+
 
 		#sort
-
-		#erase all
+		reminders = f.read().split('\n')
+		f.close()
+		
+		reminders.sort()
 
 		#insert sorted list back in
+		reminders = '\n'.join(reminders)
+		f = open(remindFilePath, 'w')
+		f.write(reminders)
+		f.close()
 
 		pass
 
