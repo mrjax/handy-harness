@@ -334,7 +334,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 			#Parse through and remove all between start delimiter and end delimiter
 			#....also add cases for Start of File and End of File SOF/EOF
 			#....also add cases for line numbers of destination file? or relative numbers?
-			insert = f.read().encode('ascii','ignore')
+			insert = f.read()
 			f.close()
 			#print insert
 
@@ -375,7 +375,7 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 
 
 	def addToReminders(self, edit):
-		print "adding to reminders"
+		print "Adding to reminders"
 
 		#grab reminder filename
 		config = sublime.load_settings("Handy_Harness.sublime-settings")
@@ -458,6 +458,11 @@ class HandyHarnessCommand(sublime_plugin.TextCommand):
 				remindEnd += 1
 
 			#erase line from reminders
+			if index != 0:
+				index -= 1
+			elif remindEnd != len(reminders):
+				remindEnd += 1
+
 			reminders = reminders[0:index] + reminders[remindEnd:len(reminders)]
 
 			f = open(remindFilePath, 'w')

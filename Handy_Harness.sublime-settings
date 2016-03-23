@@ -1,7 +1,7 @@
 {
-	"remindFile": "C:/Users/Erik/Dropbox/Universal Share/ref/lists/testremind.txt",
-	"todoInsertionFile": "C:/Users/Erik/Dropbox/Universal Share/testtodo.txt",
-	"startDelimiter": "--reminder start--",
-	"endDelimiter": "--reminder end--",
-	"daysFromNow": "60"
+	"remindFile": "C:/Users/Erik/Dropbox/Universal Share/ref/lists/remind.txt",
+	"todoInsertionFile": "C:/Users/Erik/Dropbox/Universal Share/todotoday.txt",
+	"startDelimiter": "sof",
+	"endDelimiter": "TODO",
+	"daysFromNow": "30"
 }

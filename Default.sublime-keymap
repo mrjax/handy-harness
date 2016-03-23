@@ -36,6 +36,10 @@
 		"args": { "op": "random"}
 	},
 	{
+		"keys": ["ctrl+alt+a"], "command": "handy_harness",
+		"args": { "op": "addToReminders"}
+	},
+	{
 		"keys": ["ctrl+alt+r"], "command": "handy_harness",
 		"args": { "op": "removeFromReminders"}
 	}
